@@ -4,12 +4,10 @@ build :: () {
     w := compiler_create_workspace("main");
     options := get_build_options(w);
     options.output_executable_name = "main";
-    options.use_custom_link_command = true;
-    options.backend = .LLVM;
     options.cpu_target = .X64;
-    options.os_target = .LINUX;
+    options.os_target = .WINDOWS;
     set_build_options(options, w);
-    jai_crossplatform_setup_options(w);
+    jai_zig_cc_setup_options(w);
 
     zig_cc_options := Zig_Cc_Options.{};
     defer free(zig_cc_options);
@@ -25,7 +23,7 @@ build :: () {
         if !message  break;
         if message.kind == .COMPLETE  break;
 
-        jai_crossplatform_handle_message(message, w, zig_cc_options);
+        jai_zig_cc_handle_message(message, w, zig_cc_options);
     }
 
     compiler_end_intercept(w);
@@ -35,4 +33,4 @@ build :: () {
 
 #import "Compiler";
 #import "Basic";
-#import "Jai_Crossplatform";
+#import "Jai_Zig_Cc";

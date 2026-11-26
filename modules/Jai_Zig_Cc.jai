@@ -1,4 +1,4 @@
-jai_crossplatform_setup_options :: (w: Workspace) {
+jai_zig_cc_setup_options :: (w: Workspace) {
     options := get_build_options(w);
 
     if options.os_target == {
@@ -9,7 +9,9 @@ jai_crossplatform_setup_options :: (w: Workspace) {
         case;
     }
 
+    options.backend = .LLVM;
     options.llvm_options.target_system_triple = get_triple(options, true); // This leaks, but it should be fine...
+    options.use_custom_link_command = true;
 
     set_build_options(options, w);
 }
@@ -17,14 +19,18 @@ jai_crossplatform_setup_options :: (w: Workspace) {
 Zig_Cc_Options :: struct {
     additional_files: [..]string;
     additional_flags: [..]string;
+    link_paths: [..]string;
+    include_paths: [..]string;
 };
 
 free :: (zig_cc_options: Zig_Cc_Options) {
     array_free(zig_cc_options.additional_files);
     array_free(zig_cc_options.additional_flags);
+    array_free(zig_cc_options.link_paths);
+    array_free(zig_cc_options.include_paths);
 }
 
-jai_crossplatform_handle_message :: (message: *Message, w: Workspace, zig_cc_options: Zig_Cc_Options) {
+jai_zig_cc_handle_message :: (message: *Message, w: Workspace, zig_cc_options: Zig_Cc_Options) {
     if message.kind == .PHASE {
         phase := cast(*Message_Phase) message;
         if phase.phase == .READY_FOR_CUSTOM_LINK_COMMAND {
@@ -63,7 +69,17 @@ jai_crossplatform_handle_message :: (message: *Message, w: Workspace, zig_cc_opt
                 array_add(*cmd, it);
             }
 
-            array_add(*cmd, "modules/Jai_Crossplatform_Fix.c");
+            for zig_cc_options.link_paths {
+                array_add(*cmd, "-L");
+                array_add(*cmd, it);
+            }
+
+            for zig_cc_options.include_paths {
+                array_add(*cmd, "-I");
+                array_add(*cmd, it);
+            }
+
+            array_add(*cmd, "modules/Jai_Zig_Cc.c");
 
             print("%", cmd);
             result := run_command(..cmd);
