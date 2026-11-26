@@ -1,0 +1,10 @@
+*.a
+*.lib
+main
+*.exe
+*.pdb
+*.o
+.build
+.zig-cache
+zig-out
+zig-pkg
