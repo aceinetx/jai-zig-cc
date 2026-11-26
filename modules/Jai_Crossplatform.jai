@@ -14,7 +14,17 @@ jai_crossplatform_setup_options :: (w: Workspace) {
     set_build_options(options, w);
 }
 
-jai_crossplatform_handle_message :: (message: *Message, w: Workspace) {
+Zig_Cc_Options :: struct {
+    additional_files: [..]string;
+    additional_flags: [..]string;
+};
+
+free :: (zig_cc_options: Zig_Cc_Options) {
+    array_free(zig_cc_options.additional_files);
+    array_free(zig_cc_options.additional_flags);
+}
+
+jai_crossplatform_handle_message :: (message: *Message, w: Workspace, zig_cc_options: Zig_Cc_Options) {
     if message.kind == .PHASE {
         phase := cast(*Message_Phase) message;
         if phase.phase == .READY_FOR_CUSTOM_LINK_COMMAND {
@@ -45,7 +55,15 @@ jai_crossplatform_handle_message :: (message: *Message, w: Workspace) {
                 array_add(*cmd, it);
             }
 
-            array_add(*cmd, "fix.c");
+            for zig_cc_options.additional_files {
+                array_add(*cmd, it);
+            }
+
+            for zig_cc_options.additional_flags {
+                array_add(*cmd, it);
+            }
+
+            array_add(*cmd, "modules/Jai_Crossplatform_Fix.c");
 
             print("%", cmd);
             result := run_command(..cmd);
