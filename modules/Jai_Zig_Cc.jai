@@ -61,14 +61,6 @@ jai_zig_cc_handle_message :: (message: *Message, w: Workspace, zig_cc_options: Z
                 array_add(*cmd, it);
             }
 
-            for zig_cc_options.additional_files {
-                array_add(*cmd, it);
-            }
-
-            for zig_cc_options.additional_flags {
-                array_add(*cmd, it);
-            }
-
             for zig_cc_options.link_paths {
                 array_add(*cmd, "-L");
                 array_add(*cmd, it);
@@ -76,6 +68,14 @@ jai_zig_cc_handle_message :: (message: *Message, w: Workspace, zig_cc_options: Z
 
             for zig_cc_options.include_paths {
                 array_add(*cmd, "-I");
+                array_add(*cmd, it);
+            }
+
+            for zig_cc_options.additional_flags {
+                array_add(*cmd, it);
+            }
+
+            for zig_cc_options.additional_files {
                 array_add(*cmd, it);
             }
 
